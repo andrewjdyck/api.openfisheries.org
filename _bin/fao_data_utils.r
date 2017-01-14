@@ -3,19 +3,18 @@
 # Read data from FISHSTATJ CSV Export
 # Notes on this dataset:
 #   1. the country column contains a 182 observations with null
-read_fao_data <- function() {
-  in_data <<- read.csv(
-    './data/fishstat_export_s_capture2013.csv', 
-    as.is=TRUE,
+read_fao_data <- function(data_file) {
+   read.csv(
+    data_file, 
+    as.is=TRUE
   )
 }
 
-clean_fao_data <- function() {
+clean_fao_data <- function(in_data, years) {
   # We only care about the weight of fish caught, so remove the number of fish measures
   names(in_data)[1:4] <- c("iso3c", "a3_code", "area", "measure")
   data <- in_data[which(in_data$measure == "Quantity (tonnes)"), ]
   data$measure <- NULL
-  
   
   # for parsing the areas
   data$inland <- as.numeric(grepl(" - Inland waters", data$area))
@@ -31,13 +30,13 @@ clean_fao_data <- function() {
     data[which(data$iso3c!=""),], 
     direction="long", 
     varying=list(
-      sapply(1950:2011, function(year) paste("X",year,sep="")),
-      c("S", sapply(1:61, function(s) paste("S.",s,sep="")))
+      sapply(years, function(year) paste("X",year,sep="")),
+      c("S", sapply(1:(length(years)-1), function(s) paste("S.",s,sep="")))
     ), 
     v.names=c("catch", "S"), 
     idvar=c("iso3c", "a3_code", "inland", "location_id"), 
     timevar="year", 
-    times=1950:2011,
+    times=years,
     new.row.names=NULL
   )
   d$S[which(d$S==".")] <- ""
