@@ -6,7 +6,19 @@ data_file <- './data/fishstat_export_s_capture2016.csv'
 in_data <- read_fao_data(data_file)
 clean_fao_data(in_data, years=1950:2014)
 
+# Creates a tidy dataset
 prep_fao_fishstat_data(out_data)
+
+# CAUTION!! 
+# remove any existing files in the api/landings directory
+# clean_landings_files()
+
+# Create a master json file for global landings
+file.copy('./data/countries.json', './api/landings/countries.json')
+file.copy('./data/species.json', './api/landings/species.json')
+dir.create('./api/landings/countries/')
+dir.create('./api/landings/species/')
+
 
 output_country_json(country_list)
 output_species_json(species_list)

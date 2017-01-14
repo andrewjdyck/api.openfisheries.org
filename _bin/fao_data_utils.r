@@ -10,6 +10,11 @@ read_fao_data <- function(data_file) {
   )
 }
 
+clean_landings_files <- function() {
+  unlink('./api/landings/', recursive = TRUE)
+  dir.create('./api/landings/')
+}
+
 clean_fao_data <- function(in_data, years) {
   # We only care about the weight of fish caught, so remove the number of fish measures
   names(in_data)[1:4] <- c("iso3c", "a3_code", "area", "measure")
