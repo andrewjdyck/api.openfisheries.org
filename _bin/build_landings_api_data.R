@@ -14,6 +14,8 @@ prep_fao_fishstat_data(out_data)
 # clean_landings_files()
 
 # Create a master json file for global landings
+dir.create('./api/')
+dir.create('./api/landings')
 file.copy('./data/countries.json', './api/landings/countries.json')
 file.copy('./data/species.json', './api/landings/species.json')
 dir.create('./api/landings/countries/')
@@ -23,7 +25,7 @@ dir.create('./api/landings/species/')
 output_country_json(country_list)
 output_species_json(species_list)
 
-#writeLines(
-#  toJSON(data.frame(version=0.1, url='http://api.openfisheries.org')),
-#  '../api/api.json'
-#)
+writeLines(
+ toJSON(data.frame(version=0.2, url='http://api.openfisheries.org')),
+ './api/api.json'
+)
