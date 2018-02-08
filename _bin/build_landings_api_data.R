@@ -24,7 +24,7 @@ dir.create('./api/landings/species/')
 
 output_country_json(country_list)
 output_species_json(species_list)
-output_global_json()
+output_global_json(out_data)
 
 writeLines(
   toJSON(
