@@ -18,7 +18,8 @@ clean_landings_files <- function() {
 clean_fao_data <- function(in_data, years) {
   # We only care about the weight of fish caught, so remove the number of fish measures
   names(in_data)[1:4] <- c("iso3c", "a3_code", "area", "measure")
-  data <- in_data[which(in_data$measure == "Quantity (tonnes)"), ]
+  # data <- in_data[which(in_data$measure == "Quantity (tonnes)"), ]
+  data <- in_data[which(in_data$measure == "Tonnes - live weight"), ]
   data$measure <- NULL
   
   # for parsing the areas
