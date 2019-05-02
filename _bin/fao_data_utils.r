@@ -46,6 +46,7 @@ clean_fao_data <- function(in_data, years) {
   )
   d$S[which(d$S==".")] <- ""
   d[,c("created_date", "last_updated_date")] <- Sys.time()
+  row.names(d) <- NULL
   out_data <<- d
 
   # Create a table of notes for the symbols field

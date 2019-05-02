@@ -80,5 +80,10 @@ output_glogal_json <- function(dataset) {
   writeLines(json_string, './api/landings.json')
 }
 
+output_global_disagg_csv <- function(dataset) {
+  temp1 <- out_data[, c('iso3c', 'a3_code', 'inland', 'year', 'catch')]
+  names(temp1)[2] <- 'species'
+  writeLines(temp1, './api/landings/global_fao_disagg.csv')
+}
 
 # end
