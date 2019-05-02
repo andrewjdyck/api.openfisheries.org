@@ -31,7 +31,7 @@ output_global_json(out_data)
 writeLines(
   toJSON(
     data.frame(
-      version=0.3, 
+      version=0.4, 
       url='http://api.openfisheries.org'
     )
   ),
