@@ -75,7 +75,7 @@ return_global_catch_json <- function(dataset) {
   toJSON(return_data)
 }
 
-output_glogal_json <- function(dataset) {
+output_global_json <- function(dataset) {
   json_string <- return_global_catch_json(dataset)
   writeLines(json_string, './api/landings.json')
 }
