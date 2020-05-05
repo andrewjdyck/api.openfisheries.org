@@ -2,9 +2,9 @@
 source('./_bin/fao_data_utils.r')
 source('./_bin/prepare_api_json_data.r')
 
-data_file <- './data/fishstat_export_s_capture2018.csv'
+data_file <- './data/fishstat_export_s_capture2020.csv'
 in_data <- read_fao_data(data_file)
-clean_fao_data(in_data, years=1950:2017)
+clean_fao_data(in_data, years=1950:2018)
 
 # Creates a tidy dataset
 prep_fao_fishstat_data(out_data)

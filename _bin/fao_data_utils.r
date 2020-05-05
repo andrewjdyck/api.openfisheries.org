@@ -17,7 +17,7 @@ clean_landings_files <- function() {
 
 clean_fao_data <- function(in_data, years) {
   # We only care about the weight of fish caught, so remove the number of fish measures
-  names(in_data)[1:4] <- c("iso3c", "a3_code", "area", "measure")
+  names(in_data)[1:5] <- c("iso3c", "a3_code", "area", "source", "measure")
   # data <- in_data[which(in_data$measure == "Quantity (tonnes)"), ]
   data <- in_data[which(in_data$measure == "Tonnes - live weight"), ]
   data$measure <- NULL
@@ -29,9 +29,13 @@ clean_fao_data <- function(in_data, years) {
   names(locations) <- c("location", "location_id")
   data <- merge(data, locations, by.x="location", by.y="location")
   
+  # only capture production
+  data <- data[which(data$source == "Capture production"),]
+  
   # Reshape to long format
   data$location <- NULL
   data$area <- NULL
+  data$source <- NULL
   d <- reshape(
     data[which(data$iso3c!=""),], 
     direction="long", 
