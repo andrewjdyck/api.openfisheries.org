@@ -1,6 +1,7 @@
 library(countrycode)
 library(readr)
 library(dplyr)
+library(jsonlite)
 
 
 output_subsidies_json <- function(input_df) {
@@ -45,7 +46,7 @@ subsidies_in <- readr::read_csv('./data/subsidies/1-s2.0-S2352340919310613-mmc1/
 # - Untd Arab Em -> "United Arab Emirates"
 # - Micronesia -> "Micronesia (Federated States of)"
 # - Dominican Rp -> "Dominican Republic"
-subsidies <- input_df %>%
+subsidies <- subsidies_in %>%
   select(-X1) %>%
   mutate(iso3c = countrycode::countrycode(Country, origin='country.name', destination='iso3c')) %>%
   mutate(iso3c = ifelse(
