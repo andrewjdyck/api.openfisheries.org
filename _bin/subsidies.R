@@ -37,6 +37,15 @@ output_total_subsidies <- function(input_df) {
     FUN="sum"
   ) %>%
     rename(Subsidy = x)
+  
+  subsidy_total_by_country <- aggregate(
+    subsidies$Subsidies,
+    by=list(Country=subsidies$Country, iso3c=subsidies$iso3c),
+    FUN="sum"
+  ) %>%
+    rename(Subsidy = x)
+  
+  writeLines(toJSON(subsidy_total_by_country), './docs/subsidies/subsidy_country_totals.json')
   writeLines(toJSON(subsidy_total_by_category), './docs/subsidies/subsidy_category_totals.json')
   writeLines(toJSON(subsidy_total_by_type), './docs/subsidies/subsidy_type_totals.json')
 }
