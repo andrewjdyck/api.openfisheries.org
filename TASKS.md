@@ -13,7 +13,7 @@ Plan and task list for the MVP described in [MVP.md](MVP.md).
 
 ## Current state
 
-- `api.openfisheries.org` repo: 2,511 generated JSON files in `docs/`, served via GitHub Pages (from `main` / `docs`) at the api.openfisheries.org subdomain. R scripts in `_bin/`, tests in `tests/testthat/`. Old FAO CSV exports tracked in `data/`; the newest is `fishstat_export_s_capture2020.csv` (1950 to 2018).
+- `api.openfisheries.org` repo: 2,513 generated JSON files in `docs/`, served via GitHub Pages (from `main` / `docs`) at the api.openfisheries.org subdomain. R scripts in `_bin/`, tests in `tests/testthat/`. Old FAO CSV exports tracked in `data/`; the newest is `fishstat_export_s_capture2020.csv` (1950 to 2018).
 - `openfisheries.github.io` repo: built Hugo output (Hugo 0.54.0) with no source, served at www.openfisheries.org. Contains a stale copy of the API output. The site does not call the API.
 - `ropenfisheries` R package does not call the API.
 - Known consumer: the rOpenSci `rfisheries` R package wraps this API.
@@ -26,8 +26,8 @@ Plan and task list for the MVP described in [MVP.md](MVP.md).
 - [x] Add `testthat` unit tests. Run with `Rscript -e 'testthat::test_dir("tests/testthat")'`.
 - [ ] HTTPS: check GitHub repo Settings → Pages → "Enforce HTTPS".
   - [ ] If it is on, change `API_URL` in `_bin/build_landings_api_data.R` to https, regenerate `docs/api.json`, and update the README URLs.
-- [ ] Add the missing `docs/landings/species/AUX.json` and `CON.json`. The pipeline generates them, but they were never committed, probably because AUX and CON are reserved file names on Windows.
-- [ ] Rerun `Rscript _bin/subsidies.R` locally with the real `countrycode` package and confirm there is no diff. (The files were regenerated with a stand-in, because CRAN was blocked in the cloud session.)
+- [x] Add the missing `docs/landings/species/AUX.json` (giant catfish) and `CON.json` (stromboid conchs). The pipeline generated them, but they were never committed, probably because AUX and CON are reserved file names on Windows. Avoid regenerating or committing `docs/` from Windows, or these two files will go missing again.
+- [x] Rerun `Rscript _bin/subsidies.R` with the real `countrycode` package (versions 1.6.1 and 1.9.0, from conda-forge) and confirm there is no diff in `docs/subsidies/`.
 
 ## 2. Prepare the 2026 data
 
@@ -60,7 +60,7 @@ Plan and task list for the MVP described in [MVP.md](MVP.md).
 
 ## 4. Serve the legacy URLs
 
-- [ ] Generate a list of every URL currently served (all 2,511 files in `docs/`, plus `AUX.json` and `CON.json`) to use as a regression test.
+- [ ] Generate a list of every URL currently served (all 2,513 files in `docs/`) to use as a regression test. `AUX.json` and `CON.json` are new, so the live site currently returns 404 for them.
 - [ ] Decide how to serve them. The recommended option is to keep generating the legacy JSON with the R pipeline and serve it as Workers static assets; the alternative is to rebuild each response from D1.
 - [ ] Decide whether legacy URLs serve the 2026 data or stay frozen on the 2018 data (see Open questions).
 - [ ] Serve every legacy path from the Worker, including `/api.json` and `/subsidies/*`, with the same JSON shape and CORS headers.
