@@ -10,7 +10,7 @@ source("./_bin/fao_data_utils.r")
 source("./_bin/prepare_api_json_data.r")
 
 API_VERSION <- 0.4
-API_URL <- "http://api.openfisheries.org"
+API_URL <- "https://api.openfisheries.org"
 
 build_landings_api <- function(data_file,
                                out_dir = "docs",

@@ -18,24 +18,24 @@ The API is experimental. Feedback on what could work better is welcome (see Cont
 
 The API supports GET requests and returns JSON, which can be read in nearly every programming language, including R and Python. Global landings by year:
 
-    http://api.openfisheries.org/landings.json
+    https://api.openfisheries.org/landings.json
 
 Lists of all countries and species that can be used in API calls:
 
-    http://api.openfisheries.org/landings/countries.json
-    http://api.openfisheries.org/landings/species.json
+    https://api.openfisheries.org/landings/countries.json
+    https://api.openfisheries.org/landings/species.json
 
 Landings by country, using the ISO 3166 alpha-3 country code (here, the United States):
 
-    http://api.openfisheries.org/landings/countries/USA.json
+    https://api.openfisheries.org/landings/countries/USA.json
 
 Landings by species, using the three-letter ASFIS species code (here, skipjack tuna):
 
-    http://api.openfisheries.org/landings/species/SKJ.json
+    https://api.openfisheries.org/landings/species/SKJ.json
 
 Fisheries subsidies by country, using the ISO 3166 alpha-3 country code:
 
-    http://api.openfisheries.org/subsidies/USA.json
+    https://api.openfisheries.org/subsidies/USA.json
 
 Older documentation used URLs of the form `http://openfisheries.org/api/landings.json`.
 

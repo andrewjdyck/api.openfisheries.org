@@ -24,8 +24,7 @@ Plan and task list for the MVP described in [MVP.md](MVP.md).
 - [x] Refactor the pipeline: removed the global variables, the year range is detected from the export (and can be overridden), and the output folder is a parameter that defaults to `docs/`. The output is byte for byte identical to the old pipeline's.
 - [x] Remove the duplicate `output_global_json` call, and make cleanup an opt-in that only removes the per-country and per-species folders.
 - [x] Add `testthat` unit tests. Run with `Rscript -e 'testthat::test_dir("tests/testthat")'`.
-- [ ] HTTPS: check GitHub repo Settings → Pages → "Enforce HTTPS".
-  - [ ] If it is on, change `API_URL` in `_bin/build_landings_api_data.R` to https, regenerate `docs/api.json`, and update the README URLs.
+- [x] HTTPS: made the `api` DNS record in Cloudflare "DNS only" (grey cloud) so GitHub could issue a certificate, then turned on "Enforce HTTPS" in GitHub Pages. `API_URL` in `_bin/build_landings_api_data.R`, `docs/api.json`, and the README URLs now use https. Plain http requests are redirected to https.
 - [x] Add the missing `docs/landings/species/AUX.json` (giant catfish) and `CON.json` (stromboid conchs). The pipeline generated them, but they were never committed, probably because AUX and CON are reserved file names on Windows. Avoid regenerating or committing `docs/` from Windows, or these two files will go missing again.
 - [x] Rerun `Rscript _bin/subsidies.R` with the real `countrycode` package (versions 1.6.1 and 1.9.0, from conda-forge) and confirm there is no diff in `docs/subsidies/`.
 
@@ -81,11 +80,11 @@ Plan and task list for the MVP described in [MVP.md](MVP.md).
 
 ## 6. Cut over DNS
 
-- [ ] Find out which DNS provider hosts openfisheries.org. A Worker custom domain needs the zone on Cloudflare; otherwise, plan the move or use a route that works with a plain CNAME.
+- [x] Find out which DNS provider hosts openfisheries.org: Cloudflare (it is registered with Cloudflare Registrar). So the Worker can take api.openfisheries.org as a custom domain, and Cloudflare issues its HTTPS certificate.
 - [ ] Lower the DNS TTL a day beforehand.
-- [ ] Point the api subdomain at the Worker.
+- [ ] Point the api subdomain at the Worker by adding api.openfisheries.org as a Worker custom domain. This replaces the current `api` CNAME to GitHub Pages.
 - [ ] Check the legacy URL list, `/v1/`, and `/mcp` on api.openfisheries.org.
-- [ ] Rollback plan: point the subdomain back to GitHub Pages, which keeps serving `docs/` from `main`.
+- [ ] Rollback plan: remove the Worker custom domain and restore the `api` CNAME to `andrewjdyck.github.io` as "DNS only" (grey cloud). GitHub Pages keeps serving `docs/` from `main` in the meantime.
 - [ ] Turn on request analytics to learn who uses the API.
 - [ ] If any URL changed, open an issue or PR on `rfisheries`.
 
@@ -106,7 +105,5 @@ Plan and task list for the MVP described in [MVP.md](MVP.md).
 
 ## Open questions
 
-- Is HTTPS currently enforced on api.openfisheries.org?
-- Which DNS provider hosts openfisheries.org?
 - Should the legacy URLs serve the 2026 data in the old shape, or stay frozen on the 2018 data?
 - Does anyone outside this project depend on the current URLs?
