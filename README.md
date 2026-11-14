@@ -66,6 +66,13 @@ The R scripts in `_bin/` build the JSON files in `docs/`, which GitHub Pages ser
     Rscript _bin/build_landings_api_data.R
     Rscript _bin/subsidies.R
 
+The live API is still built from the FishStatJ export in `data/`. To work with the newer FAO Global Production releases, download one (it is not committed to git), then build from it or export it for the new database:
+
+    Rscript _bin/download_fao_data.R 2026.1.0
+    Rscript _bin/build_landings_api_data.R data/fao/GlobalProduction_2026.1.0.zip <out_dir>
+    Rscript _bin/compare_landings.R docs <out_dir>
+    Rscript _bin/export_d1_data.R
+
 Run the tests with:
 
     Rscript -e 'testthat::test_dir("tests/testthat")'

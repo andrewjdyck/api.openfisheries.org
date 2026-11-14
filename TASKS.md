@@ -4,8 +4,8 @@ Plan and task list for the MVP described in [MVP.md](MVP.md).
 
 ## Plan
 
-1. **Fix the existing pipeline**: bugs in the R scripts that build today's API files. *(Mostly done.)*
-2. **Prepare the 2026 data**: read the FAO Global Production 2026.1.0 release with the R pipeline.
+1. **Fix the existing pipeline**: bugs in the R scripts that build today's API files. *(Done.)*
+2. **Prepare the 2026 data**: read the FAO Global Production 2026.1.0 release with the R pipeline. *(Done.)*
 3. **Build the `/v1/` API** on Cloudflare Workers, D1, and Hono, and deploy it to a workers.dev test URL.
 4. **Serve the legacy URLs** from the same Worker, and check every one against the current files.
 5. **Add the MCP server** to the same Worker.
@@ -30,14 +30,15 @@ Plan and task list for the MVP described in [MVP.md](MVP.md).
 
 ## 2. Prepare the 2026 data
 
-- [ ] Download https://www.fao.org/fishery/static/Data/GlobalProduction_2026.1.0.zip and inspect it.
-  - [ ] Identify the main data file and its code lists (countries, species, fishing areas, production source, units).
-  - [ ] Check how countries are coded. If it uses UN M49 numeric codes rather than ISO alpha-3, use the country code list to map them.
-  - [ ] Note how the status symbols (the old "S" column) are represented.
-- [ ] Add a reader to `_bin/fao_data_utils.r` that turns the new files into the same long format `clean_fao_data()` returns (iso3c, a3_code, inland, location_id, year, catch, S), plus unit tests on a small fixture.
-- [ ] Compare against the current `docs/landings/` files for overlapping years (1950 to 2018). Explain any differences, since FAO revises past figures.
-- [ ] Write the cleaned data in a form D1 can load (CSV, or SQL insert files).
-- [ ] Keep the zip out of git. Add it to `.gitignore`, and commit only the extracted files the pipeline needs, if they are small enough.
+- [x] Download and inspect the release. `Rscript _bin/download_fao_data.R 2026.1.0` saves it to `data/fao/` (6.4 MB zip, ignored by git).
+  - [x] Main data file: `Global_production_quantity.csv`, one row per country, species, fishing area, production source, measure, and year (1950 to 2024). Capture in tonnes is `PRODUCTION_SOURCE_DET.CODE == "CAPTURE"` and `MEASURE == "Q_tlw"`. Code lists: `CL_FI_COUNTRY_GROUPS.csv`, `CL_FI_SPECIES_GROUPS.csv`, `CL_FI_WATERAREA_GROUPS.csv` (which also flags inland or marine), `CL_FI_PRODUCTION_SOURCE_DET.csv`, `CL_FI_SYMBOL_SDMX.csv`, `FSJ_UNIT.csv`.
+  - [x] Countries are UN M49 numeric codes, mapped to ISO3 with the country code list. Three entities have no ISO3 code (former Ethiopia PDR, former Sudan, "Other nei") and are dropped, as before. The code list gives the former Netherlands Antilles (`ANT`) two UN codes; only one is used in the data.
+  - [x] Status symbols are now SDMX codes (A official, I imputed, N not significant (under 0.5 t), E estimated, and others) rather than the old blank, F, -, and 0 symbols. They are kept as they are.
+- [x] Add a reader: `read_fao_release()` and `clean_fao_release()` in `_bin/fao_data_utils.r` produce the same long format as `clean_fao_data()`, plus a `un_code` column. `build_landings_api_data.R` accepts either a release zip or an old CSV export. Unit tests are in `tests/testthat/test-fao-release.R`. The old CSV still builds the current `docs/` byte for byte.
+- [x] Compare against the current `docs/landings/` files for 1950 to 2018, using `_bin/compare_landings.R`. Global totals differ by 0.01% (at most 0.14% in any year). The country and species differences are FAO revisions (USSR reporting for 1988 to 1991, merged sardine and anchovy species, new territories). See `reports/fao_2026.1.0_vs_current_api.md`.
+- [x] Write D1 load files: `Rscript _bin/export_d1_data.R` writes CSVs and SQL to `data/d1/` (ignored by git): a schema, lookup tables (245 countries, 3,768 species, 29 areas), 616,490 landings rows split into 7 files of at most 100,000 rows, and an index file. Official zeros are dropped; not-significant rows (status N) are kept. Checked by loading into SQLite: no orphan codes, and yearly totals match the 2026 legacy build.
+- [x] Keep the zip out of git: `data/fao/*.zip` and `data/d1/` are in `.gitignore`. The extracted data file is 56 MB, too big to commit comfortably, so the pipeline reads straight from the zip.
+- [ ] Decide whether the legacy `countries.json` and `species.json` code lists should be regenerated from the 2026 code lists (259 countries with ISO3 codes, 13,772 species) in their current shape. They are still copied from `data/`. Part of the step 4 decision on legacy URLs.
 
 ## 3. Build the `/v1/` API
 
@@ -45,13 +46,13 @@ Plan and task list for the MVP described in [MVP.md](MVP.md).
   - [ ] Create a Cloudflare account and install `wrangler`.
   - [ ] Create a `worker/` folder with a Hono app in TypeScript.
 - [ ] Database.
-  - [ ] Design the D1 schema: a `landings` table (country, species, area, inland, year, catch, symbol), plus `countries` and `species` lookup tables, with indexes on country, species, and year.
-  - [ ] Write a load script that takes the pipeline output and loads it into D1 (local first, then remote).
+  - [ ] Review the draft D1 schema in `_bin/d1_utils.R` (`d1_schema_sql()`): `landings` (iso3c, a3_code, area, year, catch, status; primary key on the first four), `countries`, `species`, `areas` (with the inland flag), and `metadata` (source, release, unit). Indexes on (a3_code, year) and year.
+  - [ ] Load `data/d1/sql/*.sql` into D1 with `wrangler d1 execute --file`, local first, then remote. D1's free plan limits rows written per day (100,000 at the time of writing, and index entries may count too), so the remote load takes about a week on the free plan, or one go on the Workers paid plan. Check Cloudflare's current limits first.
 - [ ] Endpoints.
   - [ ] `GET /v1/landings` with filters `country`, `species`, `year_from`, `year_to`, `inland`, and pagination (`limit`, `offset` or a cursor).
   - [ ] Totals by year, optionally grouped by country or species, so callers do not have to sum rows themselves.
   - [ ] `GET /v1/countries` and `GET /v1/species` for code lookups.
-  - [ ] Include the data source and FAO release version in responses.
+  - [ ] Include the data source and FAO release version in responses. FAO licenses the data under CC BY 4.0, so this attribution is required.
   - [ ] Send `Access-Control-Allow-Origin: *` on every response.
 - [ ] Tests (Vitest) for filters, pagination, and error cases (unknown codes, bad years).
 - [ ] Deploy to the workers.dev URL.
