@@ -1,5 +1,8 @@
 
-# Builds the landings API files from a FishStatJ capture production export.
+# Builds the landings API files from either:
+#   - a FAO Global Production release zip (or a folder of its extracted files),
+#     e.g. data/fao/GlobalProduction_2026.1.0.zip, or
+#   - an older FishStatJ capture production CSV export.
 #
 # Run from the repository root, in R or RStudio:
 #   source("_bin/build_landings_api_data.R")
@@ -16,12 +19,9 @@ build_landings_api <- function(data_file,
                                out_dir = "docs",
                                years = NULL,
                                clean = FALSE) {
-  in_data <- read_fao_data(data_file)
-  if (is.null(years)) years <- detect_fao_years(in_data)
-  message("Building landings API from ", data_file, " for ",
-          min(years), "-", max(years), " into ", out_dir, "/")
-
-  landings <- clean_fao_data(in_data, years = years)
+  landings <- read_landings(data_file, years = years)
+  message("Built landings from ", data_file, " for ",
+          min(landings$year), "-", max(landings$year), "; writing to ", out_dir, "/")
 
   # Set clean = TRUE to delete existing per-country and per-species files first.
   # Note this also removes files for codes that are no longer in the FAO data,
@@ -36,6 +36,17 @@ build_landings_api <- function(data_file,
   output_api_metadata(out_dir, version = API_VERSION, url = API_URL)
 
   invisible(landings)
+}
+
+# Reads and cleans either input format into the long landings format.
+read_landings <- function(data_file, years = NULL) {
+  if (grepl("\\.zip$", data_file) || dir.exists(data_file)) {
+    clean_fao_release(read_fao_release(data_file), years = years)
+  } else {
+    in_data <- read_fao_data(data_file)
+    if (is.null(years)) years <- detect_fao_years(in_data)
+    clean_fao_data(in_data, years = years)
+  }
 }
 
 args <- commandArgs(trailingOnly = TRUE)

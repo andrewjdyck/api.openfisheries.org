@@ -3,3 +3,11 @@
 .RData
 .Ruserdata
 /api
+
+# FAO release downloads (get them with _bin/download_fao_data.R)
+/data/fao/*.zip
+
+# Generated D1 load files (build them with _bin/export_d1_data.R)
+/data/d1/
+
+.DS_Store
